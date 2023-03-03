@@ -1,5 +1,8 @@
 const axios = require('axios');
 const Actor = require("../models/Actor");
+const FormData = require("form-data");
+const https = require('https'); // or 'https' for https:// URLs
+const fs = require('fs');
 
 exports.getActors = async (_, res) => {
     try {
@@ -13,9 +16,14 @@ exports.getActors = async (_, res) => {
 
 exports.addActor = async (req, res) => {
     try {
+        const file = req.files["video"];
+        const formData = new FormData();
+        formData.append("file", file.data, file.name);
+        const response = await axios.put(`https://storage.bunnycdn.com/skbj/actors/${file.name}`, file.data, { 'content-type': 'application/x-www-form-urlencoded', headers: { "AccessKey": `aff796b2-9990-480b-b69778a60b10-b14c-4a29` } });
+
         const actor = new Actor({
             name: req.body.name,
-            thumbnail: req.body.thumbnail,
+            thumbnail: `https://skbj.b-cdn.net/actors/${file.name}`
         })
         await actor.save();
         console.log(actor)

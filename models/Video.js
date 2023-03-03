@@ -1,4 +1,6 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
+var slug = require('mongoose-slug-generator');
+mongoose.plugin(slug);
 
 const videoSchema = new mongoose.Schema({
     name: {
@@ -23,6 +25,10 @@ const videoSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Actor",
     },
+    views: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Views",
+    },
     createdAt: {
         type: Date,
         immutable: true,
@@ -32,6 +38,7 @@ const videoSchema = new mongoose.Schema({
         type: Date,
         default: () => Date.now()
     },
-
+    duration: Number,
+    slug: { type: String, slug: "name" }
 })
 module.exports = mongoose.model("Video", videoSchema)

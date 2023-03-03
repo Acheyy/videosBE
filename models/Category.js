@@ -1,4 +1,6 @@
 const mongoose = require("mongoose")
+var slug = require('mongoose-slug-generator');
+mongoose.plugin(slug);
 
 const categorySchema = new mongoose.Schema({
     name: {
@@ -7,6 +9,7 @@ const categorySchema = new mongoose.Schema({
         lowercase: true,
         minLength: 3, 
     },
+    slug: { type: String, slug: "name" }
 })
 
 module.exports = mongoose.model("Category", categorySchema)

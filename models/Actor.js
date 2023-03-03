@@ -1,4 +1,6 @@
 const mongoose = require("mongoose")
+var slug = require('mongoose-slug-generator');
+mongoose.plugin(slug);
 
 const actorSchema = new mongoose.Schema({
     name: {
@@ -10,7 +12,12 @@ const actorSchema = new mongoose.Schema({
     thumbnail: {
         type: String,
         required: true
-    }
+    },
+    slug: { type: String, slug: "name" },
+    totalVideos: {
+        type: Number,
+        default: 0
+    },
 })
 
 module.exports = mongoose.model("Actor", actorSchema)
