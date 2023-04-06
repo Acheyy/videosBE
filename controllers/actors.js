@@ -33,3 +33,13 @@ exports.addActor = async (req, res) => {
         console.error(err.message)
     }
 }
+
+exports.getSingleActor = async (req, res) => {
+    try {
+        console.log(req.params.actorName)
+        const actor = await Actor.findOne({ slug: req.params.actorName })
+        res.send(actor)
+    } catch (err) {
+        console.error(err.message)
+    }
+}

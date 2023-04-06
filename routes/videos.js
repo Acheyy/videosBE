@@ -1,5 +1,5 @@
 const express = require("express");
-const { getVideos, addVideo, deleteVideo, searchVideos, getSingleVideo, getRandomVideos, getVideosByActor } = require("../controllers/videos");
+const { getVideos, addVideo, deleteVideo, searchVideos, getSingleVideo, getRandomVideos, getVideosByActor, getVideosByCategory, getMostPopularVideos, getVideosByTag } = require("../controllers/videos");
 const jwt = require('jsonwebtoken');
 
 function authenticateToken(req, res, next) {
@@ -41,11 +41,28 @@ router
     console.log("Get random videos");
     return getRandomVideos(req, res);
   })
+  router.route("/most-popular")
+  .get((req, res) => {
+    console.log("Get most popular videos");
+    return getMostPopularVideos(req, res);
+  })
 
 router.route("/videosByActor")
   .get((req, res) => {
-    console.log("Get random videos");
+    console.log("Get videos by actor");
     return getVideosByActor(req, res);
+  })
+
+router.route("/getVideosByCategory")
+  .get((req, res) => {
+    console.log("Get videos by category");
+    return getVideosByCategory(req, res);
+  })
+
+router.route("/getVideosByTag")
+  .get((req, res) => {
+    console.log("Get videos by tag");
+    return getVideosByTag(req, res);
   })
 
 router.route("/search")
