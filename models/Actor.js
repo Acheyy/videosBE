@@ -18,6 +18,10 @@ const actorSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    isFeatured: {
+        type: Boolean,
+        default: false
+    }
 })
 
 module.exports = mongoose.model("Actor", actorSchema)

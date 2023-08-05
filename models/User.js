@@ -10,6 +10,18 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
+        unique: true
+    },
+    transactionId: {
+        type: String,
+        unique: true,
+        default: ""
+    },
+    resetPasswordToken: {
+        type: String
+    },
+    resetPasswordExpires: {
+        type: Date
     },
     password: {
         type: String,
@@ -22,6 +34,18 @@ const userSchema = new mongoose.Schema({
     bio: {
         type: String,
         default: "",
+    },
+    isUserPremium: {
+        type: Boolean,
+        default: false
+    },
+    premiumExpiry: {
+        type: Date,
+        default: null
+    },
+    isAdmin: {
+        type: Boolean,
+        default: false
     },
     history: [
         {

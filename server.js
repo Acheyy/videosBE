@@ -4,6 +4,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const fileUpload = require("express-fileupload");
 require("dotenv").config();
+require('./scheduledJobs');
 var cookieParser = require('cookie-parser')
 
 const app = express();

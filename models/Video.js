@@ -11,12 +11,17 @@ const videoSchema = new mongoose.Schema({
     slug: {},
     fileName: String,
     uploadID: String,
+    uploadID2: String,
+    uploadID3: String,
     thumbnail: String,
     category: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Category",
         required: true,
     },
+    snapshots: [{
+        type: String,
+    }],
     tags: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Tag",
@@ -29,6 +34,10 @@ const videoSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Views",
     },
+    likes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+    }],
     createdAt: {
         type: Date,
         immutable: true,
@@ -39,6 +48,6 @@ const videoSchema = new mongoose.Schema({
         default: () => Date.now()
     },
     duration: Number,
-    slug: { type: String, slug: "name" }
+    slug: { type: String, slug: "name", unique: true }
 })
 module.exports = mongoose.model("Video", videoSchema)

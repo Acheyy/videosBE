@@ -4,11 +4,17 @@ const {
     addUser,
     loginUser,
     refreshAccessToken,
-    getAccountInfo
+    getAccountInfo,
+    getUserHistory,
+    getUserLiked,
+    upgradeToPremium,
+    sendConfirmation,
+    forgotPassword,
+    resetPassword
 } = require("../controllers/users")
 
 const router = express.Router()
-  
+
 router
     .route("/")
     .get(
@@ -47,4 +53,59 @@ router
             return getAccountInfo(req, res)
         }
     )
+router
+    .route("/getUserHistory")
+    .get(
+        (req, res) => {
+            console.log("Get User History")
+            return getUserHistory(req, res)
+        }
+    )
+router
+    .route("/getUserLiked")
+    .get(
+        (req, res) => {
+            console.log("Get User Liked")
+            return getUserLiked(req, res)
+        }
+    )
+
+router
+    .route("/upgradeToPremium")
+    .post(
+        (req, res) => {
+            console.log("Upgrade to premium")
+            return upgradeToPremium(req, res)
+        }
+    )
+
+router
+    .route("/sendConfirmation")
+    .post(
+        (req, res) => {
+            console.log("Send confirmation email")
+            return sendConfirmation(req, res)
+        }
+    )
+
+router
+    .route("/forgotPassword")
+    .post(
+        (req, res) => {
+            console.log("Forgot password")
+            return forgotPassword(req, res)
+        }
+    )
+    
+router
+    .route("/resetPassword")
+    .post(
+        (req, res) => {
+            console.log("Reset password confirmation")
+            return resetPassword(req, res)
+        }
+    )
+
+
+
 module.exports = router

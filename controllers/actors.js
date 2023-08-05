@@ -14,6 +14,18 @@ exports.getActors = async (_, res) => {
     }
 }
 
+exports.getFeaturedActors = async (_, res) => {
+    try {
+        const featuredActors = await Actor.aggregate([
+            { $match: { isFeatured: true } },
+            { $sample: { size: 30 } }
+        ]);        console.log(featuredActors);
+        res.send(featuredActors);
+    } catch (err) {
+        console.error(err.message)
+    }
+}
+
 exports.addActor = async (req, res) => {
     try {
         const file = req.files["video"];
