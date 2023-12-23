@@ -4,7 +4,7 @@ const Tag = require("../models/Tag");
 exports.getTags = async (_, res) => {
     try {
         const tag = await Tag.find()
-        console.log(tag)
+        // console.log(tag)
         res.send(tag)
     } catch (err) {
         console.error(err.message)
@@ -17,7 +17,7 @@ exports.addTag = async (req, res) => {
             name: req.body.name,
         })
         await tag.save();
-        console.log(tag)
+        // console.log(tag)
         res.send(tag)
 
     } catch (err) {

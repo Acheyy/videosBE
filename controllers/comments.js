@@ -3,11 +3,11 @@ const Comment = require("../models/Comment");
 
 exports.getComments = async (req, res) => {
     try {
-        console.log("req.params", req.params)
+        // console.log("req.params", req.params)
         const { videoId } = req.params;
         const comments = await Comment.find({ videoId: videoId, isReply: false }).populate([{ path: "author" }, { path: "replies", populate: { path: "author" } }]);
 
-        console.log(comments)
+        // console.log(comments)
         res.send(comments)
     } catch (err) {
         console.error(err.message)
@@ -24,7 +24,7 @@ exports.addComment = async (req, res) => {
                 videoId: req.body.videoId,
             });
             await comment.save();
-            console.log(req.body);
+            // console.log(req.body);
             res.send(comment);
         } else {
             const comment = new Comment({
@@ -38,7 +38,7 @@ exports.addComment = async (req, res) => {
             if (!mainComment) {
                 throw new Error('Main comment not found');
             }
-            console.log("mainComment.replies", mainComment);
+            // console.log("mainComment.replies", mainComment);
             mainComment.replies.push(comment._id);
             await mainComment.save();
             res.send(comment);

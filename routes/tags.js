@@ -10,13 +10,13 @@ router
     .route("/")
     .get(
         (req, res) => {
-            console.log("List Tags");
+            // console.log("List Tags");
             return getTags(req, res);
         }
     )
     .post(
         (req, res) => {
-            console.log("Add Tag");
+            // console.log("Add Tag");
             return addTag(req, res);
         }
     )

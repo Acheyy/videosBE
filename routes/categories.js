@@ -10,13 +10,13 @@ router
     .route("/")
     .get(
         (req, res) => {
-            console.log("List Categories");
+            // console.log("List Categories");
             return getCategories(req, res);
         }
     )
     .post(
         (req, res) => {
-            console.log("Add Category");
+            // console.log("Add Category");
             return addCategory(req, res);
         }
     )

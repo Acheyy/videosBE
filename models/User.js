@@ -12,6 +12,10 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    credit: {
+        type: Number,
+        default: 0
+    },
     transactionId: {
         type: String,
         unique: true,
@@ -53,12 +57,28 @@ const userSchema = new mongoose.Schema({
             ref: "Video",
         },
     ],
+    purchasedVideos: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Video",
+        },
+    ],
     liked: [
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Video",
         },
     ],
+    likedActor: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Actor",
+        },
+    ],
+    purchaseIntent: {
+        type: String,
+        default: ""
+    }
 })
 
 module.exports = mongoose.model("User", userSchema)

@@ -35,10 +35,45 @@ const uploadQueue = new BetterQueue(
 exports.getVideos = async (req, res) => {
     const page = parseInt(req.query.page) || 1; // default to page 1
     const limit = parseInt(req.query.limit) || 10; // default to 10 videos per page
+    const sitemap = req.query.sitemap === 'true'; // check if sitemap parameter is true
 
     try {
         const count = await Video.countDocuments();
-        const videos = await Video.find()
+        let query = Video.find();
+
+        if (sitemap) {
+            query = query.select('uploadID'); // Select only 'name' field
+        } else {
+            query = query.populate(["actor", "category", "views"]); // Populate related fields
+        }
+
+        const videos = await query
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        res.send({
+            currentPage: page,
+            totalPages: Math.ceil(count / limit),
+            totalVideos: count,
+            videos,
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server Error");
+    }
+};
+
+exports.getSpecialVideos = async (req, res) => {
+    const page = parseInt(req.query.page) || 1; // default to page 1
+    const limit = parseInt(req.query.limit) || 10; // default to 10 videos per page
+
+    try {
+        // Count only videos with cost greater than 0
+        const count = await Video.countDocuments({ cost: { $gt: 0 } });
+
+        // Fetch only videos with cost greater than 0
+        const videos = await Video.find({ cost: { $gt: 0 } })
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit)
@@ -56,13 +91,50 @@ exports.getVideos = async (req, res) => {
     }
 };
 
+exports.getPurchasedVideos = async (req, res) => {
+    try {
+        const cookie = req.headers.cookie;
+        const authCookie = cookie
+            ? cookie.split(";").find((c) => c.trim().startsWith("token="))
+            : null;
+        const token = authCookie ? authCookie.split("=")[1] : null;
+
+        if (token == null) return res.status(403).json({ error: "Forbidden" }).stat;
+
+        jwt.verify(token, process.env.TOKEN_SECRET, async (err, user) => {
+
+            if (err) return res.status(403).json({ error: "Forbidden" }).stat;
+
+            req.user = user;
+
+            // Find the user and populate the likedActor field
+            const userDB = await User.findOne({ userName: user.userName })
+            .populate({
+              path: 'purchasedVideos',
+              populate: {
+                path: 'actor',
+                model: 'Actor' // If it's not in the same Mongoose connection, you need to specify the model name
+              }
+            });
+          
+            // console.log("userDB", userDB.likedActor);
+
+            // Send the populated likedActor field to the frontend
+            res.json({ videos: userDB.purchasedVideos });
+        });
+    } catch (err) {
+        console.error(err.message)
+    }
+}
+
+
 exports.getVideosByActor = async (req, res) => {
     const page = parseInt(req.query.page) || 1; // default to page 1
     const limit = parseInt(req.query.limit) || 10; // default to 10 videos per page
 
     try {
         const actor = await Actor.findOne({ slug: req.query.actor });
-        const count = actor.totalVideos;
+        const count = actor?.totalVideos;
 
         if (req.query.orderBy == "date") {
             const videos = await Video.find({ actor: actor._id })
@@ -110,6 +182,7 @@ exports.getVideosByActor = async (req, res) => {
                         as: "category",
                     },
                 },
+                { $unwind: "$category" }, // Add this line
             ]);
 
             res.send({
@@ -162,6 +235,7 @@ exports.getVideosByActor = async (req, res) => {
                         as: "category",
                     },
                 },
+                { $unwind: "$category" }, // Add this line
             ]);
 
             res.send({
@@ -187,7 +261,7 @@ exports.getVideosByActor = async (req, res) => {
                 { $count: "totalVideos" },
             ]);
 
-            const count = totalVipVideos.length > 0 ? totalVipVideos[0].totalVideos : 0;
+            const count = totalVipVideos.length > 0 ? totalVipVideos[0]?.totalVideos : 0;
 
             const videos = await Video.aggregate([
                 { $match: { actor: actor._id } },
@@ -220,6 +294,7 @@ exports.getVideosByActor = async (req, res) => {
                         as: "category",
                     },
                 },
+                { $unwind: "$category" }, // Add this line
                 {
                     $lookup: {
                         from: "views",
@@ -338,7 +413,7 @@ exports.getRandomVideos = async (req, res) => {
             { path: "views" },
         ]);
 
-        console.log("videos", videos);
+        // console.log("videos", videos);
         res.send(videos);
     } catch (err) {
         console.error(err.message);
@@ -394,6 +469,7 @@ exports.getMostLikedVideos = async (req, res) => {
                     as: "category",
                 },
             },
+            { $unwind: "$category" }, // Add this line
             {
                 $lookup: {
                     from: "views",
@@ -505,7 +581,7 @@ exports.likeVideo = async (req, res) => {
             : null;
         const token = authCookie ? authCookie.split("=")[1] : null;
 
-        console.log("token", token);
+        // console.log("token", token);
         if (token == null) return res.status(403).json({ error: "Forbidden" }).stat;
 
         jwt.verify(token, process.env.TOKEN_SECRET, async (err, user) => {
@@ -599,14 +675,14 @@ exports.fileExists = async (req, res) => {
     try {
         const blobName = req.params.blobName;
         const containerName = "first"; // Replace with your container name
-        console.log(req.params.blobName);
+        // console.log(req.params.blobName);
 
         const containerClient = blobServiceClient.getContainerClient(containerName);
         const blobClient = containerClient.getBlobClient(blobName);
 
         // Check if the file exists
         const exists = await blobClient.exists();
-        console.log("exists", exists);
+        // console.log("exists", exists);
 
         res.json({ exists });
     } catch (error) {
@@ -631,20 +707,20 @@ const processUpload = async (req, res) => {
         //     "https://api.streamhide.com/api/upload/server?key=956panm98wo2rdtonky"
         // );
         // let serverUrl2 = server2.data.result;
-        // console.log("server2.data.result", server2.data.result);
+        // // console.log("server2.data.result", server2.data.result);
         // const formData2 = new FormData();
         // const file2 = req.files["video"];
         // formData2.append("file", file2.data, file2.name);
         // formData2.append("key", "956panm98wo2rdtonky");
-        // console.log("start upload StreamHide");
+        // // console.log("start upload StreamHide");
         // const response2 = await axios.post(serverUrl2, formData2, {
         //     ...formData2.getHeaders(),
         // });
         // if (response2.data.status == 200) {
-        //     console.log("response StreamHide", response2.data.files[0]);
+        //     // console.log("response StreamHide", response2.data.files[0]);
         //     uploadID2 = response2.data.files[0].filecode;
         // } else {
-        //     console.log("Error uploading to StreamHide");
+        //     // console.log("Error uploading to StreamHide");
         // }
 
         // let uploadID3 = "";
@@ -652,27 +728,27 @@ const processUpload = async (req, res) => {
         //     "https://api.streamwish.com/api/upload/server?key=183ulosm5q6moj2x4yu"
         // );
         // let serverUrl3 = "https://Y3KpCdvlgSba.sw-cdnstream.com/upload/01";
-        // console.log("server3.data.result", server3.data.result);
+        // // console.log("server3.data.result", server3.data.result);
         // const formData3 = new FormData();
         // const file3 = req.files["video"];
         // formData3.append("file", file3.data, file3.name);
         // formData3.append("key", "183ulosm5q6moj2x4yu");
-        // console.log("start upload StreamWish");
+        // // console.log("start upload StreamWish");
         // const response3 = await axios.post(serverUrl3, formData3, {
         //     ...formData3.getHeaders(),
         // });
         // if (response3.data.status == 200) {
-        //     console.log("response StreamWish", response3.data.files[0]);
+        //     // console.log("response StreamWish", response3.data.files[0]);
         //     uploadID3 = response3.data.files[0].filecode;
         // } else {
-        //     console.log("Error uploading to StreamWish");
+        //     // console.log("Error uploading to StreamWish");
         // }
 
         // let server = await axios.get(
         //     "https://api.streamsb.com/api/upload/server?key=66418reck8nac228fzn2j"
         // );
         // let serverUrl = server.data.result;
-        // console.log("server.data.result", server.data.result);
+        // // console.log("server.data.result", server.data.result);
         const formData = new FormData();
         const file = req.files["video"];
         formData.append("file", file.data, file.name);
@@ -690,7 +766,7 @@ const processUpload = async (req, res) => {
             "-" +
             removeKoreanCharacters(file.name.replace(/[^\w\s]/gi, "")) +
             ".mp4";
-        console.log("fileName", fileName);
+        // console.log("fileName", fileName);
         file.name = fileName;
 
         const config = {
@@ -759,7 +835,7 @@ const processUpload = async (req, res) => {
             // optionally throw the error again or return to stop the function
             return;
         }
-        
+
         let videoIDStream;
 
         try {
@@ -768,9 +844,9 @@ const processUpload = async (req, res) => {
                 data,
                 config2
             );
-        
+
             videoIDStream = responseVideoStream.data.guid;
-        
+
             const responseVideoStream2 = await axios.put(
                 `https://video.bunnycdn.com/library/141502/videos/${videoIDStream}`,
                 dataStream2,
@@ -781,7 +857,7 @@ const processUpload = async (req, res) => {
             console.error('Error during uploading to Bunny CDN:', error);
             // optionally throw the error again or return to stop the function
         }
-        
+
         const thumbnails = [
             req.files["thumbnail1"],
             req.files["thumbnail2"],
@@ -798,7 +874,7 @@ const processUpload = async (req, res) => {
 
             // Upload the resized thumbnail
             const remoteFileName = `${file.name}_${i + 1}.webp`;
-            console.log("remoteFileName", remoteFileName);
+            // console.log("remoteFileName", remoteFileName);
             await axios.put(
                 `https://storage.bunnycdn.com/skbj/videos/${remoteFileName}`,
                 resizedThumbnail,
@@ -812,6 +888,7 @@ const processUpload = async (req, res) => {
         const tagsArray = req.body["tags[]"].split(",");
         const video = new Video({
             name: req.body.name,
+            cost: req.body.price,
             fileName: fileName,
             uploadID: videoIDStream,
             thumbnail: `https://skbj.b-cdn.net/videos/${file.name}_1.webp`,
@@ -826,7 +903,7 @@ const processUpload = async (req, res) => {
             actor: req.body.actor,
             duration: req.body.duration,
         });
-        console.log("video", video);
+        // console.log("video", video);
         const views = new Views({
             videoId: video._id,
             views: 0,
@@ -838,8 +915,8 @@ const processUpload = async (req, res) => {
             }
         );
         video.views = views._id;
-        console.log("video", video);
-        // console.log(views);
+        // console.log("video", video);
+        // // console.log(views);
         await video.save();
         await views.save();
         res.send(video);
@@ -854,45 +931,96 @@ exports.addVideo = async (req, res) => {
 
 exports.deleteVideo = async (req, res) => {
     try {
-        console.log("test", req.query);
+        // console.log("test", req.query);
         const video = await Video.deleteOne({ uploadID: req.query.videoId });
         const views = await Views.deleteOne({ videoId: req.query.videoId });
-        console.log(video);
+        // console.log(video);
         res.send(video);
     } catch (err) {
         console.error(err.message);
     }
 };
 
+exports.deleteVideos = async (req, res) => {
+    try {
+        // Fetch all actors
+        const actors = await Actor.find({});
+
+        for (let actor of actors) {
+            // Count the number of videos associated with the actor
+            const videoCount = await Video.countDocuments({ actor: actor._id });
+
+            // Update the actor's totalVideos
+            actor.totalVideos = videoCount;
+            await actor.save();
+        }
+
+        // console.log('Actors totalVideos updated successfully!');
+    } catch (error) {
+        console.error('Error updating actors totalVideos:', error.message);
+    }
+
+}
+
 exports.searchVideos = async (req, res) => {
     try {
-        if (req.query.searchText) {
+        const searchText = req.query.searchText;
+        const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+        const limit = parseInt(req.query.limit) || 20; // Default to 20 items per page if not provided
+        const skip = (page - 1) * limit; // Calculate the number of items to skip
+
+        if (searchText) {
+            // Count the total number of videos matching the search criteria
+            const count = await Video.aggregate([
+                {
+                    $search: {
+                        index: "custom",
+                        autocomplete: {
+                            path: "name",
+                            query: searchText,
+                        },
+                    },
+                },
+                {
+                    $count: "total",
+                },
+            ]);
+
+            const totalVideos = count[0] ? count[0].total : 0;
+
+            // Fetch the videos with pagination
             const videos = await Video.aggregate([
                 {
                     $search: {
                         index: "custom",
                         autocomplete: {
                             path: "name",
-                            query: req.query.searchText,
+                            query: searchText,
                         },
                     },
                 },
-                {
-                    $limit: 20,
-                },
+                { $skip: skip }, // Skip the documents for pagination
+                { $limit: limit }, // Limit the number of documents returned
             ]);
+
             await Video.populate(videos, [
                 { path: "actor" },
                 { path: "category" },
                 { path: "views" },
             ]);
-            console.log(videos);
-            res.send(videos);
+
+            res.send({
+                currentPage: page,
+                totalPages: Math.ceil(totalVideos / limit),
+                totalVideos: totalVideos,
+                videos,
+            });
         } else {
             res.send({ message: "Please send the searchText" });
         }
     } catch (err) {
         console.error(err.message);
+        res.status(500).send({ message: "Server error" });
     }
 };
 

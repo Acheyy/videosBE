@@ -6,12 +6,13 @@ const ejs = require('ejs');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const Video = require("../models/Video");
 
 exports.getUsers = async (_, res) => {
     try {
-        const tag = await User.find();
-        console.log(tag);
-        res.send(tag);
+        // const tag = await User.find();
+        // // console.log(tag);
+        res.send("Nothing here");
     } catch (err) {
         console.error(err.message);
     }
@@ -24,13 +25,18 @@ exports.addUser = async (req, res) => {
             return res.status(400).json({ error: "Email already in use" });
         }
 
+        const existingUsername = await User.findOne({ userName: req.body.userName });
+        if (existingUsername) {
+            return res.status(400).json({ error: "userName already in use" });
+        }
+
         const user = new User({
             userName: req.body.userName,
             email: req.body.email,
             password: req.body.password,
         });
         await user.save();
-        console.log(user);
+        // console.log(user);
         res.send(user);
     } catch (err) {
         console.error(err.message);
@@ -61,7 +67,7 @@ exports.getAccountInfo = async (req, res) => {
             ? cookie.split(";").find((c) => c.trim().startsWith("token="))
             : null;
         const token = authCookie ? authCookie.split("=")[1] : null;
-        console.log("token", token);
+        // console.log("token", token);
         if (token == null) return res.status(403).json({ error: "Forbidden" }).stat;
 
         jwt.verify(token, process.env.TOKEN_SECRET, async (err, user) => {
@@ -79,8 +85,9 @@ exports.getAccountInfo = async (req, res) => {
 
 exports.upgradeToPremium = async (req, res) => {
     try {
+        // // console.log("here",req.body.data.metadata.customerId )
+
         const userId = req.body.userId; // Assuming the user ID is available in the req.user object
-        const transactionId = req.body.transactionId; // Assuming the user ID is available in the req.user object
         const premiumDuration = 30; // Duration of the premium subscription in days
         const currentDate = new Date();
         const premiumExpiry = new Date(
@@ -90,7 +97,6 @@ exports.upgradeToPremium = async (req, res) => {
         await User.findByIdAndUpdate(userId, {
             isUserPremium: true,
             premiumExpiry: premiumExpiry,
-            transactionId: transactionId
         });
 
         res.status(200).json({ message: "User upgraded to premium successfully." });
@@ -101,6 +107,153 @@ exports.upgradeToPremium = async (req, res) => {
 };
 
 
+exports.upgradeToPremium2 = async (req, res) => {
+    try {
+        console.log("here", req.body.data)
+        console.log("client_reference_id", req.body.data.object.client_reference_id)
+        const userId = req.body.data.object.client_reference_id;
+
+        console.log("userId", userId)
+
+        const userFromDB = await User.findById(userId);
+
+        console.log(userFromDB);
+
+        if (userFromDB) {
+            if (userFromDB.purchaseIntent === "plugingpt") {
+
+                const premiumDuration = 30; // Duration of the premium subscription in days
+                const currentDate = new Date();
+                const premiumExpiry = new Date(
+                    currentDate.setDate(currentDate.getDate() + premiumDuration)
+                );
+
+                await User.findByIdAndUpdate(userId, {
+                    isUserPremium: true,
+                    premiumExpiry: premiumExpiry,
+                    purchaseIntent: ""
+                });
+
+                res.status(200).json({ message: "User upgraded to premium successfully." });
+            }
+            if (userFromDB.purchaseIntent === "mysteryxtrasmall") {
+
+                await User.findByIdAndUpdate(userId, {
+                    $inc: { credit: 50 },
+                    purchaseIntent: ""
+                });
+
+                res.status(200).json({ message: "Credit added to user successfully." });
+            }
+            if (userFromDB.purchaseIntent === "mysterysmallbundle") {
+
+                await User.findByIdAndUpdate(userId, {
+                    $inc: { credit: 100 },
+                    purchaseIntent: ""
+                });
+
+                res.status(200).json({ message: "Credit added to user successfully." });
+            }
+            if (userFromDB.purchaseIntent === "mysterybundle") {
+
+                await User.findByIdAndUpdate(userId, {
+                    $inc: { credit: 500 },
+                    purchaseIntent: ""
+                });
+
+                res.status(200).json({ message: "Credit added to user successfully." });
+            }
+            if (userFromDB.purchaseIntent === "mysterybigbundle") {
+
+                await User.findByIdAndUpdate(userId, {
+                    $inc: { credit: 1000 },
+                    purchaseIntent: ""
+                });
+
+                res.status(200).json({ message: "Credit added to user successfully." });
+            }
+            if (userFromDB.purchaseIntent === "mysteryxtrabig") {
+
+                await User.findByIdAndUpdate(userId, {
+                    $inc: { credit: 2000 },
+                    purchaseIntent: ""
+                });
+
+                res.status(200).json({ message: "Credit added to user successfully." });
+            }
+        } else {
+            console.log('User not found');
+        }
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Server error" });
+    }
+};
+
+exports.setPurchaseIntent = async (req, res) => {
+    try {
+
+        const userId = req.body.userId;
+        const intent = req.body.intent;
+
+        await User.findByIdAndUpdate(userId, {
+            purchaseIntent: intent,
+        });
+
+        res.status(200).json({ message: "User upgraded to premium successfully." });
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Server error" });
+    }
+};
+
+exports.addCoinsToUser = async (req, res) => {
+    try {
+        // // console.log("here",req.body.data.metadata.customerId )
+
+        const userId = req.body.userId; // Assuming the user ID is available in the req.user object
+        const creditToAdd = req.body.credit
+
+        await User.findByIdAndUpdate(userId, {
+            $inc: { credit: creditToAdd },
+        });
+
+        res.status(200).json({ message: "Credit added to user successfully." });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Server error" });
+    }
+};
+
+
+exports.purchaseVideo = async (req, res) => {
+    try {
+        const userId = req.body.userId;
+        const videoId = req.body.videoId;
+        const creditCost = req.body.creditCost;
+
+        // Find the user by ID and get their current credit balance
+        const user = await User.findById(userId);
+
+        // Check if the user has enough credits
+        if (user.credit < creditCost) {
+            return res.status(400).json({ error: "Insufficient credits" });
+        }
+
+        // Deduct credits and add the video to purchased list
+        await User.findByIdAndUpdate(userId, {
+            $inc: { credit: -creditCost },
+            $push: { purchasedVideos: videoId },
+        });
+
+        res.status(200).json({ message: "Video purchased successfully." });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Server error" });
+    }
+};
 exports.forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
@@ -115,7 +268,7 @@ exports.forgotPassword = async (req, res) => {
         // Set token and expiration time to the user's account
         user.resetPasswordToken = token;
         user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
-        console.log(user)
+        // console.log(user)
         await user.save();
 
         // Send an email to the user containing the token and a link to reset the password
@@ -144,7 +297,7 @@ exports.resetPassword = async (req, res) => {
         const user = await User.findOne({
             resetPasswordToken: token,
         });
-        console.log(user)
+        // console.log(user)
 
         if (!user) {
             return res.status(400).json({ error: 'Invalid or expired reset token' });
@@ -182,7 +335,7 @@ exports.sendConfirmation = async (req, res) => {
         const html = await ejs.renderFile(templatePath, { username });
 
         const info = await mailer.sendMail({
-            from: 'SBKJ <contact@skbj.tv>',
+            from: 'SexKBJ <contact@sexkbj.tv>',
             to,
             subject: "Confirmation Email",
             html: html, // Send the rendered HTML as the email content
@@ -204,7 +357,7 @@ exports.getUserHistory = async (req, res) => {
             : null;
         const token = authCookie ? authCookie.split("=")[1] : null;
 
-        console.log("token", token);
+        // console.log("token", token);
         if (token == null) return res.status(403).json({ error: "Forbidden" }).stat;
 
         jwt.verify(token, process.env.TOKEN_SECRET, async (err, user) => {
@@ -222,7 +375,7 @@ exports.getUserHistory = async (req, res) => {
                 ],
             });
 
-            console.log(userDB.history);
+            // // console.log(userDB.history);
 
             res.send({
                 videos: userDB.history,
@@ -235,35 +388,50 @@ exports.getUserLiked = async (req, res) => {
     try {
         const cookie = req.headers.cookie;
         const authCookie = cookie
-            ? cookie.split(";").find((c) => c.trim().startsWith("token="))
+            ? cookie.split(";").find(c => c.trim().startsWith("token="))
             : null;
         const token = authCookie ? authCookie.split("=")[1] : null;
 
-        console.log("token", token);
-        if (token == null) return res.status(403).json({ error: "Forbidden" }).stat;
+        if (token == null) return res.status(403).json({ error: "Forbidden" });
 
         jwt.verify(token, process.env.TOKEN_SECRET, async (err, user) => {
-            if (err) return res.status(403).json({ error: "Forbidden" }).stat;
+            if (err) return res.status(403).json({ error: "Forbidden" });
 
             req.user = user;
 
-            const userDB = await User.findOne({ userName: user.userName }).populate({
-                path: "liked",
-                model: "Video", // Specify the model name for the video collection
-                populate: [
-                    { path: "actor" },
-                    { path: "category" },
-                    { path: "views" },
-                ],
-            });
+            // Pagination parameters
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 20;
+            const skip = (page - 1) * limit;
 
-            console.log(userDB.liked);
+            // Get the user and the count of liked videos
+            const userDB = await User.findOne({ userName: user.userName });
+            const totalLikes = userDB.liked.length;
+            const totalPages = Math.ceil(totalLikes / limit);
+
+            const likedVideos = await User.findOne({ userName: user.userName })
+                .populate({
+                    path: "liked",
+                    model: "Video",
+                    populate: [{ path: "actor" }, { path: "category" }, { path: "views" }],
+                    options: { 
+                        skip: skip,
+                        limit: limit
+                    }
+                })
+                .select("liked"); // Select only the liked field
 
             res.send({
-                videos: userDB.liked,
+                videos: likedVideos.liked,
+                currentPage: page,
+                perPage: limit,
+                totalLikes: totalLikes,
+                totalPages: totalPages
             });
         });
-    } catch (err) { }
+    } catch (err) {
+        res.status(500).send({ error: "Internal Server Error" });
+    }
 };
 
 exports.refreshAccessToken = async (req, res) => {
@@ -297,17 +465,17 @@ async function refreshAccessToken(refreshToken) {
     try {
         const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
-        console.log("decoded", decoded);
+        // console.log("decoded", decoded);
 
         const user = await User.findOne({ userName: decoded.userName });
         if (!user) {
-            console.log("User not found");
+            // console.log("User not found");
         }
 
         const accessToken = generateAccessToken(user);
         return accessToken;
     } catch (err) {
-        console.log(err);
-        console.log("Invalid token");
+        // console.log(err);
+        // console.log("Invalid token");
     }
 }

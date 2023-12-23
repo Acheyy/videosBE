@@ -6,7 +6,7 @@ const transport = nodemailer.createTransport({
   secure: false, // use SSL
   auth: {
     user: 'contact@skbj.tv', // Use your custom email address
-    pass: 'h957q542sc8rqwq7', // Use your email password
+    pass: 'dweuzwvgsc7apxqn', // Use your email password
   },
 });
 

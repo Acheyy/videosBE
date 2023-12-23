@@ -14,6 +14,10 @@ const videoSchema = new mongoose.Schema({
     uploadID2: String,
     uploadID3: String,
     thumbnail: String,
+    cost: {
+        type: Number,
+        default: 0
+    },
     category: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Category",

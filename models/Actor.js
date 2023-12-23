@@ -7,7 +7,7 @@ const actorSchema = new mongoose.Schema({
         type: String,
         required: true,
         lowercase: true,
-        minLength: 3, 
+        minLength: 3,
     },
     thumbnail: {
         type: String,
@@ -21,7 +21,11 @@ const actorSchema = new mongoose.Schema({
     isFeatured: {
         type: Boolean,
         default: false
-    }
+    },
+    likes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+    }]
 })
 
 module.exports = mongoose.model("Actor", actorSchema)

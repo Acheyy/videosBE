@@ -17,7 +17,7 @@ app.use(
   })
 );
 const corsOptions = {
-  origin: ["http://localhost:3000", "http://skbj.tv", "https://skbj.tv"], // set the origin of the client
+  origin: ["http://localhost:3000","http://localhost:3001", "http://skbj.tv", "https://skbj.tv", "http://sexkbj.tv", "https://sexkbj.tv"], // set the origin of the client
   credentials: true, // enable sending of new cookies
 };
 
@@ -25,7 +25,7 @@ app.use(cors(corsOptions));
 app.use(fileUpload());
 
 app.get("/", (req, res) => {
-  console.log("Here");
+  // console.log("Here");
 });
 
 const videosRouter = require("./routes/videos");
@@ -48,7 +48,7 @@ async function connect() {
   try {
     await mongoose.set("strictQuery", false);
     await mongoose.connect(URI);
-    console.log("Connected to MongoDB");
+    // console.log("Connected to MongoDB");
   } catch (error) {
     console.error(error);
   }
