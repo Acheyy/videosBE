@@ -13,10 +13,38 @@ exports.getActors = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 30;
         const skip = (page - 1) * limit;
+        const order = req.query.order;
         const sitemap = req.query.sitemap === 'true'; // Check if sitemap parameter is true
-
+        
         const totalActors = await Actor.countDocuments();
         let query = Actor.find();
+
+        let sort = {}; // Define sort object
+
+        switch (order) {
+            case 'alphabetic':
+                query = query.sort({ name: 1 });
+                break;
+            case 'most_videos':
+                query = query.sort({ totalVideos: -1 }); 
+                break;
+            case 'most_followers':
+                query = Actor.aggregate([
+                    {
+                        $addFields: {
+                            likesLength: {
+                                $size: { 
+                                    $ifNull: ["$likes", []] // Provides an empty array if 'likes' is missing
+                                }
+                            }
+                        }
+                    },
+                    { $sort: { likesLength: -1 } }
+                    // ... other aggregation stages like $skip and $limit for pagination, if needed
+                ]);
+                
+                break;
+        }
 
         if (sitemap) {
             // Select only the 'name' field if sitemap is true

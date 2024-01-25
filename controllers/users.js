@@ -272,11 +272,11 @@ exports.forgotPassword = async (req, res) => {
         await user.save();
 
         // Send an email to the user containing the token and a link to reset the password
-        const resetUrl = `https://skbj.tv/reset-password?token=${token}`;
+        const resetUrl = `https://sexkbj.tv/reset-password?token=${token}`;
         const message = `Hello <strong>${user.userName}</strong>. Please click the following link to reset your password: ${resetUrl}`;
 
         await mailer.sendMail({
-            from: 'SBKJ <contact@skbj.tv>',
+            from: 'SEXBKJ <contact@sexkbj.tv>',
             to: email,
             subject: "Password Reset Request",
             html: message

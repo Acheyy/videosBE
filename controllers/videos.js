@@ -863,6 +863,10 @@ const processUpload = async (req, res) => {
             req.files["thumbnail2"],
             req.files["thumbnail3"],
             req.files["thumbnail4"],
+            req.files["thumbnail5"],
+            req.files["thumbnail6"],
+            req.files["thumbnail7"],
+            req.files["thumbnail8"],
         ];
 
         for (let i = 0; i < thumbnails.length; i++) {
@@ -897,6 +901,10 @@ const processUpload = async (req, res) => {
                 `https://skbj.b-cdn.net/videos/${file.name}_2.webp`,
                 `https://skbj.b-cdn.net/videos/${file.name}_3.webp`,
                 `https://skbj.b-cdn.net/videos/${file.name}_4.webp`,
+                `https://skbj.b-cdn.net/videos/${file.name}_5.webp`,
+                `https://skbj.b-cdn.net/videos/${file.name}_6.webp`,
+                `https://skbj.b-cdn.net/videos/${file.name}_7.webp`,
+                `https://skbj.b-cdn.net/videos/${file.name}_8.webp`,
             ],
             category: req.body.category,
             tags: tagsArray,
