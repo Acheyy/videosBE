@@ -30,6 +30,7 @@ app.get("/", (req, res) => {
 
 const videosRouter = require("./routes/videos");
 const galleriesRouter = require("./routes/galleries");
+const paymentsRouter = require("./routes/payments");
 const categoriesRouter = require("./routes/categories");
 const actorsRouter = require("./routes/actors");
 const tagsRouter = require("./routes/tags");
@@ -38,6 +39,7 @@ const commentsRouter = require("./routes/comments");
 
 app.use("/api/videos", videosRouter);
 app.use("/api/galleries", galleriesRouter);
+app.use("/api/payments", paymentsRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/actors", actorsRouter);
 app.use("/api/tags", tagsRouter);

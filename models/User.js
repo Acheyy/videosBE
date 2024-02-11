@@ -21,6 +21,11 @@ const userSchema = new mongoose.Schema({
         unique: true,
         default: ""
     },
+    paymentId: {
+        type: String,
+        unique: true,
+        default: null
+    },
     resetPasswordToken: {
         type: String
     },

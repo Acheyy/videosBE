@@ -17,7 +17,7 @@ const { blobServiceClient } = require("../azure-storage.js");
 const sharp = require("sharp");
 const { Readable } = require("stream");
 const BetterQueue = require("better-queue");
-const clone = require('clone');
+const clone = require("clone");
 
 const uploadQueue = new BetterQueue(
     async (task, cb) => {
@@ -35,14 +35,14 @@ const uploadQueue = new BetterQueue(
 exports.getVideos = async (req, res) => {
     const page = parseInt(req.query.page) || 1; // default to page 1
     const limit = parseInt(req.query.limit) || 10; // default to 10 videos per page
-    const sitemap = req.query.sitemap === 'true'; // check if sitemap parameter is true
+    const sitemap = req.query.sitemap === "true"; // check if sitemap parameter is true
 
     try {
         const count = await Video.countDocuments();
         let query = Video.find();
 
         if (sitemap) {
-            query = query.select('uploadID'); // Select only 'name' field
+            query = query.select("uploadID"); // Select only 'name' field
         } else {
             query = query.populate(["actor", "category", "views"]); // Populate related fields
         }
@@ -102,31 +102,28 @@ exports.getPurchasedVideos = async (req, res) => {
         if (token == null) return res.status(403).json({ error: "Forbidden" }).stat;
 
         jwt.verify(token, process.env.TOKEN_SECRET, async (err, user) => {
-
             if (err) return res.status(403).json({ error: "Forbidden" }).stat;
 
             req.user = user;
 
             // Find the user and populate the likedActor field
-            const userDB = await User.findOne({ userName: user.userName })
-            .populate({
-              path: 'purchasedVideos',
-              populate: {
-                path: 'actor',
-                model: 'Actor' // If it's not in the same Mongoose connection, you need to specify the model name
-              }
+            const userDB = await User.findOne({ userName: user.userName }).populate({
+                path: "purchasedVideos",
+                populate: {
+                    path: "actor",
+                    model: "Actor", // If it's not in the same Mongoose connection, you need to specify the model name
+                },
             });
-          
+
             // console.log("userDB", userDB.likedActor);
 
             // Send the populated likedActor field to the frontend
             res.json({ videos: userDB.purchasedVideos });
         });
     } catch (err) {
-        console.error(err.message)
+        console.error(err.message);
     }
-}
-
+};
 
 exports.getVideosByActor = async (req, res) => {
     const page = parseInt(req.query.page) || 1; // default to page 1
@@ -261,7 +258,8 @@ exports.getVideosByActor = async (req, res) => {
                 { $count: "totalVideos" },
             ]);
 
-            const count = totalVipVideos.length > 0 ? totalVipVideos[0]?.totalVideos : 0;
+            const count =
+                totalVipVideos.length > 0 ? totalVipVideos[0]?.totalVideos : 0;
 
             const videos = await Video.aggregate([
                 { $match: { actor: actor._id } },
@@ -339,7 +337,6 @@ exports.getVideosByActor = async (req, res) => {
                 videos,
             });
         }
-
     } catch (err) {
         console.error(err.message);
         res.status(500).send("Server Error");
@@ -762,9 +759,9 @@ const processUpload = async (req, res) => {
         // }
         const randomString = Math.random().toString(36).slice(-10);
         const fileName =
-            randomString +
-            "-" +
             removeKoreanCharacters(file.name.replace(/[^\w\s]/gi, "")) +
+            "-" +
+            randomString +
             ".mp4";
         // console.log("fileName", fileName);
         file.name = fileName;
@@ -784,18 +781,16 @@ const processUpload = async (req, res) => {
             },
         };
 
-
         const data = {
             title: file.name, // Replace with your video title
         };
         const config2 = {
             headers: {
-                'Content-Type': 'application/json',
-                'AccessKey': '93bb85a4-a150-4b7f-9d25de98a447-703c-4c9e', // Replace with your access key
+                "Content-Type": "application/json",
+                AccessKey: "93bb85a4-a150-4b7f-9d25de98a447-703c-4c9e", // Replace with your access key
             },
             data,
         };
-
 
         const config23 = {
             headers: {
@@ -828,10 +823,10 @@ const processUpload = async (req, res) => {
             const storageVideo = await axios.put(
                 `https://storage.bunnycdn.com/skbjvid/videos/${file.name}`,
                 dataStream,
-                config,
+                config
             );
         } catch (error) {
-            console.error('Error during uploading to Bunny storage:', error);
+            console.error("Error during uploading to Bunny storage:", error);
             // optionally throw the error again or return to stop the function
             return;
         }
@@ -854,7 +849,7 @@ const processUpload = async (req, res) => {
             );
             console.log("Finished bunny video upload", responseVideoStream2);
         } catch (error) {
-            console.error('Error during uploading to Bunny CDN:', error);
+            console.error("Error during uploading to Bunny CDN:", error);
             // optionally throw the error again or return to stop the function
         }
 
@@ -895,6 +890,7 @@ const processUpload = async (req, res) => {
             cost: req.body.price,
             fileName: fileName,
             uploadID: videoIDStream,
+            uploadedBy: req.body.uploadedBy,
             thumbnail: `https://skbj.b-cdn.net/videos/${file.name}_1.webp`,
             snapshots: [
                 `https://skbj.b-cdn.net/videos/${file.name}_1.webp`,
@@ -965,10 +961,9 @@ exports.deleteVideos = async (req, res) => {
 
         // console.log('Actors totalVideos updated successfully!');
     } catch (error) {
-        console.error('Error updating actors totalVideos:', error.message);
+        console.error("Error updating actors totalVideos:", error.message);
     }
-
-}
+};
 
 exports.searchVideos = async (req, res) => {
     try {

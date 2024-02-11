@@ -106,6 +106,30 @@ exports.upgradeToPremium = async (req, res) => {
     }
 };
 
+exports.upgradeToPremium3 = async (req, res) => {
+    try {
+        // // console.log("here",req.body.data.metadata.customerId )
+
+        const userId = req.body.userId; // Assuming the user ID is available in the req.user object
+        const premiumDuration = 90; // Duration of the premium subscription in days
+        const currentDate = new Date();
+        const premiumExpiry = new Date(
+            currentDate.setDate(currentDate.getDate() + premiumDuration)
+        );
+
+        await User.findByIdAndUpdate(userId, {
+            isUserPremium: true,
+            premiumExpiry: premiumExpiry,
+            paymentId: null
+        });
+
+        res.status(200).json({ message: "User upgraded to premium successfully." });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Server error" });
+    }
+};
+
 
 exports.upgradeToPremium2 = async (req, res) => {
     try {
@@ -209,6 +233,24 @@ exports.setPurchaseIntent = async (req, res) => {
     }
 };
 
+exports.setPaymentId = async (req, res) => {
+    try {
+
+        const userId = req.body.userId;
+        const paymentId = req.body.paymentId;
+
+        await User.findByIdAndUpdate(userId, {
+            paymentId: paymentId,
+        });
+
+        res.status(200).json({ message: "User set paymentId successfully." });
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Server error" });
+    }
+};
+
 exports.addCoinsToUser = async (req, res) => {
     try {
         // // console.log("here",req.body.data.metadata.customerId )
@@ -272,11 +314,11 @@ exports.forgotPassword = async (req, res) => {
         await user.save();
 
         // Send an email to the user containing the token and a link to reset the password
-        const resetUrl = `https://sexkbj.tv/reset-password?token=${token}`;
+        const resetUrl = `https://skbj.tv/reset-password?token=${token}`;
         const message = `Hello <strong>${user.userName}</strong>. Please click the following link to reset your password: ${resetUrl}`;
 
         await mailer.sendMail({
-            from: 'SEXBKJ <contact@sexkbj.tv>',
+            from: 'SKBJ <contact@skbj.tv>',
             to: email,
             subject: "Password Reset Request",
             html: message
@@ -335,7 +377,7 @@ exports.sendConfirmation = async (req, res) => {
         const html = await ejs.renderFile(templatePath, { username });
 
         const info = await mailer.sendMail({
-            from: 'SexKBJ <contact@sexkbj.tv>',
+            from: 'SKBJ <contact@skbj.tv>',
             to,
             subject: "Confirmation Email",
             html: html, // Send the rendered HTML as the email content

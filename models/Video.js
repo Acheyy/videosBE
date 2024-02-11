@@ -51,6 +51,10 @@ const videoSchema = new mongoose.Schema({
         type: Date,
         default: () => Date.now()
     },
+    uploadedBy:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+    },
     duration: Number,
     slug: { type: String, slug: "name", unique: true }
 })

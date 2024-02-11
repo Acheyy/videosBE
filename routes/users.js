@@ -9,11 +9,13 @@ const {
     getUserLiked,
     upgradeToPremium,
     upgradeToPremium2,
+    upgradeToPremium3,
     sendConfirmation,
     forgotPassword,
     resetPassword,
     addCoinsToUser,
     setPurchaseIntent,
+    setPaymentId,
     purchaseVideo
 } = require("../controllers/users")
 
@@ -91,11 +93,27 @@ router
         }
     )
 router
+    .route("/upgradeToPremium3")
+    .post(
+        (req, res) => {
+            console.log("Upgrade to premium3")
+            return upgradeToPremium3(req, res)
+        }
+    )
+router
     .route("/set-purchase-intent")
     .post(
         (req, res) => {
             console.log("Set purchase intent")
             return setPurchaseIntent(req, res)
+        }
+    )
+router
+    .route("/set-payment-id")
+    .post(
+        (req, res) => {
+            console.log("Set payment id")
+            return setPaymentId(req, res)
         }
     )
 
