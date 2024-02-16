@@ -14,7 +14,7 @@ exports.addPayment = async (req, res) => {
             pay_currency: currency,
         }, {
             headers: {
-                "x-api-key": "JTHEKWY-6EJ4KN0-PDEABBZ-TZDSGAT",
+                "x-api-key": "183T34H-R0P4T6D-PCPFF50-82K7V2W",
                 "Content-Type": "application/json",
             }
         });

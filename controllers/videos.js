@@ -769,7 +769,7 @@ const processUpload = async (req, res) => {
         const config = {
             headers: {
                 "Content-Type": file.mimetype,
-                AccessKey: "cd2cf0c3-6b4e-4c83-ad3a825c3425-f9b6-4a40",
+                AccessKey: "bcf6c056-d8af-4975-ab71056e55aa-c2d5-4297",
                 accept: "application/json",
             },
             maxContentLength: Infinity,
@@ -787,7 +787,7 @@ const processUpload = async (req, res) => {
         const config2 = {
             headers: {
                 "Content-Type": "application/json",
-                AccessKey: "93bb85a4-a150-4b7f-9d25de98a447-703c-4c9e", // Replace with your access key
+                AccessKey: "da8d3c8c-9791-4eae-8877f49c65fd-98ae-4f73", // Replace with your access key
             },
             data,
         };
@@ -795,7 +795,7 @@ const processUpload = async (req, res) => {
         const config23 = {
             headers: {
                 "Content-Type": file.mimetype,
-                AccessKey: "93bb85a4-a150-4b7f-9d25de98a447-703c-4c9e",
+                AccessKey: "da8d3c8c-9791-4eae-8877f49c65fd-98ae-4f73",
                 accept: "application/json",
             },
             maxContentLength: Infinity,
@@ -821,7 +821,7 @@ const processUpload = async (req, res) => {
 
         try {
             const storageVideo = await axios.put(
-                `https://storage.bunnycdn.com/skbjvid/videos/${file.name}`,
+                `https://storage.bunnycdn.com/kbjfreevid/videos/${file.name}`,
                 dataStream,
                 config
             );
@@ -835,7 +835,7 @@ const processUpload = async (req, res) => {
 
         try {
             const responseVideoStream = await axios.post(
-                `https://video.bunnycdn.com/library/141502/videos`,
+                `https://video.bunnycdn.com/library/203654/videos`,
                 data,
                 config2
             );
@@ -843,7 +843,7 @@ const processUpload = async (req, res) => {
             videoIDStream = responseVideoStream.data.guid;
 
             const responseVideoStream2 = await axios.put(
-                `https://video.bunnycdn.com/library/141502/videos/${videoIDStream}`,
+                `https://video.bunnycdn.com/library/203654/videos/${videoIDStream}`,
                 dataStream2,
                 config23
             );
@@ -875,11 +875,11 @@ const processUpload = async (req, res) => {
             const remoteFileName = `${file.name}_${i + 1}.webp`;
             // console.log("remoteFileName", remoteFileName);
             await axios.put(
-                `https://storage.bunnycdn.com/skbj/videos/${remoteFileName}`,
+                `https://storage.bunnycdn.com/kbjfree/videos/${remoteFileName}`,
                 resizedThumbnail,
                 {
                     "content-type": "application/x-www-form-urlencoded",
-                    headers: { AccessKey: `aff796b2-9990-480b-b69778a60b10-b14c-4a29` },
+                    headers: { AccessKey: `963dc984-f016-4af3-92809144c62a-f1a9-4158` },
                 }
             );
         }
@@ -891,16 +891,16 @@ const processUpload = async (req, res) => {
             fileName: fileName,
             uploadID: videoIDStream,
             uploadedBy: req.body.uploadedBy,
-            thumbnail: `https://skbj.b-cdn.net/videos/${file.name}_1.webp`,
+            thumbnail: `https://kbjfree.b-cdn.net/videos/${file.name}_1.webp`,
             snapshots: [
-                `https://skbj.b-cdn.net/videos/${file.name}_1.webp`,
-                `https://skbj.b-cdn.net/videos/${file.name}_2.webp`,
-                `https://skbj.b-cdn.net/videos/${file.name}_3.webp`,
-                `https://skbj.b-cdn.net/videos/${file.name}_4.webp`,
-                `https://skbj.b-cdn.net/videos/${file.name}_5.webp`,
-                `https://skbj.b-cdn.net/videos/${file.name}_6.webp`,
-                `https://skbj.b-cdn.net/videos/${file.name}_7.webp`,
-                `https://skbj.b-cdn.net/videos/${file.name}_8.webp`,
+                `https://kbjfree.b-cdn.net/videos/${file.name}_1.webp`,
+                `https://kbjfree.b-cdn.net/videos/${file.name}_2.webp`,
+                `https://kbjfree.b-cdn.net/videos/${file.name}_3.webp`,
+                `https://kbjfree.b-cdn.net/videos/${file.name}_4.webp`,
+                `https://kbjfree.b-cdn.net/videos/${file.name}_5.webp`,
+                `https://kbjfree.b-cdn.net/videos/${file.name}_6.webp`,
+                `https://kbjfree.b-cdn.net/videos/${file.name}_7.webp`,
+                `https://kbjfree.b-cdn.net/videos/${file.name}_8.webp`,
             ],
             category: req.body.category,
             tags: tagsArray,

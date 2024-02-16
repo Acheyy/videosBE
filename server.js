@@ -17,7 +17,7 @@ app.use(
   })
 );
 const corsOptions = {
-  origin: ["http://localhost:3000","http://localhost:3001", "http://skbj.tv", "https://skbj.tv", "http://sexkbj.tv", "https://sexkbj.tv"], // set the origin of the client
+  origin: ["http://localhost:3000","http://localhost:3001", "http://kbjfree.tv", "https://kbjfree.tv"], // set the origin of the client
   credentials: true, // enable sending of new cookies
 };
 

@@ -39,11 +39,11 @@ exports.addGallery = async (req, res) => {
             const remoteFileName = `${thumbnail.name}_${i + 1}.webp`;
 
             await axios.put(
-                `https://storage.bunnycdn.com/skbjvid/gallery/${name}/${remoteFileName}`,
+                `https://storage.bunnycdn.com/kbjfreevid/gallery/${name}/${remoteFileName}`,
                 resizedThumbnail,
                 {
                     "content-type": "application/x-www-form-urlencoded",
-                    headers: { AccessKey: `cd2cf0c3-6b4e-4c83-ad3a825c3425-f9b6-4a40` },
+                    headers: { AccessKey: `bcf6c056-d8af-4975-ab71056e55aa-c2d5-4297` },
                 }
             );
         }
@@ -54,7 +54,7 @@ exports.addGallery = async (req, res) => {
             const remoteFileName = `${thumbnail.name}_${index + 1}.webp`;
 
             return {
-                url: `https://skbjvid.b-cdn.net/gallery/${name}/${remoteFileName}`, // or any other file details you need
+                url: `https://kbjfree.b-cdn.net/gallery/${name}/${remoteFileName}`, // or any other file details you need
                 width: req.body.imageWidths[index],
                 height: req.body.imageHeights[index]
             };

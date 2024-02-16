@@ -333,11 +333,11 @@ exports.addActor = async (req, res) => {
         const file = req.files["video"];
         const formData = new FormData();
         formData.append("file", file.data, file.name);
-        const response = await axios.put(`https://storage.bunnycdn.com/skbj/actors/${file.name}`, file.data, { 'content-type': 'application/x-www-form-urlencoded', headers: { "AccessKey": `aff796b2-9990-480b-b69778a60b10-b14c-4a29` } });
+        const response = await axios.put(`https://storage.bunnycdn.com/kbjfree/actors/${file.name}`, file.data, { 'content-type': 'application/x-www-form-urlencoded', headers: { "AccessKey": `963dc984-f016-4af3-92809144c62a-f1a9-4158` } });
 
         const actor = new Actor({
             name: req.body.name,
-            thumbnail: `https://skbj.b-cdn.net/actors/${file.name}`
+            thumbnail: `https://kbjfree.b-cdn.net/actors/${file.name}`
         })
         await actor.save();
         // console.log(actor)

@@ -314,7 +314,7 @@ exports.forgotPassword = async (req, res) => {
         await user.save();
 
         // Send an email to the user containing the token and a link to reset the password
-        const resetUrl = `https://skbj.tv/reset-password?token=${token}`;
+        const resetUrl = `https://kbjfree.tv/reset-password?token=${token}`;
         const message = `Hello <strong>${user.userName}</strong>. Please click the following link to reset your password: ${resetUrl}`;
 
         await mailer.sendMail({
