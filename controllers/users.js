@@ -318,7 +318,7 @@ exports.forgotPassword = async (req, res) => {
         const message = `Hello <strong>${user.userName}</strong>. Please click the following link to reset your password: ${resetUrl}`;
 
         await mailer.sendMail({
-            from: 'SKBJ <contact@skbj.tv>',
+            from: 'KBJFree <contact@kbjfree.tv>',
             to: email,
             subject: "Password Reset Request",
             html: message
@@ -377,7 +377,7 @@ exports.sendConfirmation = async (req, res) => {
         const html = await ejs.renderFile(templatePath, { username });
 
         const info = await mailer.sendMail({
-            from: 'SKBJ <contact@skbj.tv>',
+            from: 'KBJFree <contact@kbjfree.tv>',
             to,
             subject: "Confirmation Email",
             html: html, // Send the rendered HTML as the email content

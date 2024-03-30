@@ -5,8 +5,8 @@ const transport = nodemailer.createTransport({
   port: 587,
   secure: false, // use SSL
   auth: {
-    user: 'contact@skbj.tv', // Use your custom email address
-    pass: 'dweuzwvgsc7apxqn', // Use your email password
+    user: 'examinedpanic8@fastmail.com', // Use your custom email address
+    pass: 'wql33khk9ja27ga8', // Use your email password
   },
 });
 

@@ -520,7 +520,7 @@ exports.getSingleVideo = async (req, res) => {
             : null;
         const token = authCookie ? authCookie.split("=")[1] : null;
         const { videoId } = req.params;
-        const video = await Video.findOne({ uploadID: videoId })
+        const video = await Video.findOne({ slug: videoId })
             .sort({ createdAt: -1 })
             .populate(["actor", "category", "tags", "views"]);
 
@@ -976,17 +976,16 @@ exports.searchVideos = async (req, res) => {
             // Count the total number of videos matching the search criteria
             const count = await Video.aggregate([
                 {
-                    $search: {
-                        index: "custom",
-                        autocomplete: {
-                            path: "name",
-                            query: searchText,
-                        },
-                    },
+                    $match: {
+                        name: {
+                            $regex: `.*${searchText}.*`,
+                            $options: "i" // Case-insensitive search
+                        }
+                    }
                 },
                 {
-                    $count: "total",
-                },
+                    $count: "total"
+                }
             ]);
 
             const totalVideos = count[0] ? count[0].total : 0;
@@ -994,13 +993,12 @@ exports.searchVideos = async (req, res) => {
             // Fetch the videos with pagination
             const videos = await Video.aggregate([
                 {
-                    $search: {
-                        index: "custom",
-                        autocomplete: {
-                            path: "name",
-                            query: searchText,
-                        },
-                    },
+                    $match: {
+                        name: {
+                            $regex: `.*${searchText}.*`,
+                            $options: "i" // Case-insensitive search
+                        }
+                    }
                 },
                 { $skip: skip }, // Skip the documents for pagination
                 { $limit: limit }, // Limit the number of documents returned
