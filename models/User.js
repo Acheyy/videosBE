@@ -48,7 +48,15 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    isRouletteSpinned: {
+        type: Boolean,
+        default: false
+    },
     premiumExpiry: {
+        type: Date,
+        default: null
+    },
+    lastRewardClaim: {
         type: Date,
         default: null
     },

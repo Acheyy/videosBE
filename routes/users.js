@@ -16,7 +16,10 @@ const {
     addCoinsToUser,
     setPurchaseIntent,
     setPaymentId,
-    purchaseVideo
+    purchaseVideo,
+    deductCoins,
+    addVideoReward,
+    rewardClaim
 } = require("../controllers/users")
 
 const router = express.Router()
@@ -41,6 +44,14 @@ router
         (req, res) => {
             // console.log("Login User");
             return loginUser(req, res);
+        }
+    )
+router
+    .route("/rewardClaim")
+    .post(
+        (req, res) => {
+            // console.log("Login User");
+            return rewardClaim(req, res);
         }
     )
 router
@@ -132,6 +143,24 @@ router
         (req, res) => {
             // console.log("Purchase video")
             return purchaseVideo(req, res)
+        }
+    )
+
+router
+    .route("/deductCoins")
+    .post(
+        (req, res) => {
+            // console.log("deductCoins")
+            return deductCoins(req, res)
+        }
+    )
+
+router
+    .route("/addVideoReward")
+    .post(
+        (req, res) => {
+            console.log("addVideoReward")
+            return addVideoReward(req, res)
         }
     )
 

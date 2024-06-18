@@ -60,6 +60,39 @@ exports.loginUser = async (req, res) => {
     }
 };
 
+exports.rewardClaim = async (req, res) => {
+    try {
+        const { _id, lastRewardClaim } = req.body;
+
+        // Find user by _id
+        const user = await User.findById(_id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Check if the reward was claimed in the last 24 hours
+        const now = new Date();
+        const lastClaimDate = new Date(user.lastRewardClaim);
+        const hoursDiff = Math.abs(now - lastClaimDate) / 36e5; // Difference in hours
+
+        if (hoursDiff < 24 || !user.isUserPremium) {
+            return res.status(400).json({ message: 'Reward already claimed in the last 24 hours' });
+        }
+
+        // Update user's credit and lastRewardClaim date
+        user.credit += 2;
+        user.lastRewardClaim = now;
+
+        // Save the user
+        await user.save();
+
+        return res.status(200).json({ message: 'Reward claimed successfully', credit: user.credit });
+    } catch (err) {
+        console.error(err.message);
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
+
 exports.getAccountInfo = async (req, res) => {
     try {
         const cookie = req.headers.cookie;
@@ -296,6 +329,68 @@ exports.purchaseVideo = async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 };
+
+exports.deductCoins = async (req, res) => {
+    try {
+        const userId = req.body.userId;
+        const creditCost = 50;
+
+        // Find the user by ID and get their current credit balance
+        const user = await User.findById(userId);
+
+        // Check if the user has enough credits
+        if (user.credit < creditCost) {
+            return res.status(400).json({ error: "Insufficient credits" });
+        }
+
+        // Deduct credits and add the video to purchased list
+        await User.findByIdAndUpdate(userId, {
+            $inc: { credit: -creditCost },
+            $set: { isRouletteSpinned: true }
+        });
+
+        res.status(200).json({ message: "Credit deducted.", success: true });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Server error", success: false});
+    }
+};
+
+exports.addVideoReward = async (req, res) => {
+    try {
+        const { userId, videoId, creditCost } = req.body;
+
+        // Find the user to check if the videoId already exists in purchasedVideos
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found", success: false });
+        }
+
+        // Check if the videoId is already in the user's purchasedVideos
+        const videoAlreadyPurchased = user.purchasedVideos.includes(videoId);
+
+        if (videoAlreadyPurchased) {
+            // If the video is already purchased, increment the user's credit balance
+            await User.findByIdAndUpdate(userId, {
+                $inc: { credit: creditCost }
+            });
+
+            return res.status(200).json({ message: "Video already purchased, credit refunded.", success: true });
+        } else {
+            // If the video is not already purchased, add the video to purchasedVideos
+            await User.findByIdAndUpdate(userId, {
+                $push: { purchasedVideos: videoId }
+            });
+
+            return res.status(200).json({ message: "Video purchased successfully.", success: true });
+        }
+    } catch (err) {
+        console.error(err.message);
+        return res.status(500).json({ error: "Server error", success: false });
+    }
+};
+
 exports.forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;

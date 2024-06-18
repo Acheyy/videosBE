@@ -6,7 +6,7 @@ const Actor = require("../models/Actor");
 const { param } = require("../routes/actors");
 const mongoose = require("mongoose");
 const https = require("https"); // or 'https' for https:// URLs
-const fs = require("fs");
+const fs = require("fs").promises;
 const Axios = require("axios");
 const jwt = require("jsonwebtoken");
 const Category = require("../models/Category");
@@ -449,62 +449,20 @@ exports.getMostLikedVideos = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // default to 10 videos per page
 
     try {
-        const videos = await Video.aggregate([
-            {
-                $lookup: {
-                    from: "actors",
-                    localField: "actor",
-                    foreignField: "_id",
-                    as: "actor",
-                },
-            },
-            {
-                $lookup: {
-                    from: "categories",
-                    localField: "category",
-                    foreignField: "_id",
-                    as: "category",
-                },
-            },
-            { $unwind: "$category" }, // Add this line
-            {
-                $lookup: {
-                    from: "views",
-                    localField: "views",
-                    foreignField: "_id",
-                    as: "views",
-                },
-            },
-            {
-                $project: {
-                    _id: 1,
-                    name: 1,
-                    slug: 1,
-                    fileName: 1,
-                    uploadID: 1,
-                    thumbnail: 1,
-                    category: 1,
-                    snapshots: 1,
-                    tags: 1,
-                    actor: { $arrayElemAt: ["$actor", 0] },
-                    views: { $arrayElemAt: ["$views", 0] },
-                    likes: 1,
-                    createdAt: 1,
-                    updatedAt: 1,
-                    duration: 1,
-                    likesCount: { $size: { $ifNull: ["$likes", []] } },
-                },
-            },
-            { $sort: { likesCount: -1 } },
-            { $skip: (page - 1) * limit },
-            { $limit: limit },
-        ]);
+        // Read the JSON file asynchronously each time the endpoint is accessed
+        const data = await fs.readFile('./downloads/most-liked.json', 'utf8');
+        const allVideos = JSON.parse(data);
+
+        // Calculate pagination
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedVideos = allVideos.slice(startIndex, endIndex);
 
         res.send({
             currentPage: page,
-            totalPages: Math.ceil(120 / limit),
-            totalVideos: 120,
-            videos,
+            totalPages: Math.ceil(allVideos.length / limit),
+            totalVideos: allVideos.length,
+            videos: paginatedVideos
         });
     } catch (err) {
         console.error(err.message);
@@ -1030,3 +988,67 @@ exports.searchVideos = async (req, res) => {
 function generateAccessToken(username) {
     return jwt.sign(username, process.env.TOKEN_SECRET, { expiresIn: "1800s" });
 }
+
+async function aggregateMostLikedVideos() {
+    try {
+        const videos = await Video.aggregate([
+            {
+                $lookup: {
+                    from: "actors",
+                    localField: "actor",
+                    foreignField: "_id",
+                    as: "actor",
+                },
+            },
+            {
+                $lookup: {
+                    from: "categories",
+                    localField: "category",
+                    foreignField: "_id",
+                    as: "category",
+                },
+            },
+            { $unwind: "$category" }, // Add this line
+            {
+                $lookup: {
+                    from: "views",
+                    localField: "views",
+                    foreignField: "_id",
+                    as: "views",
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    name: 1,
+                    slug: 1,
+                    fileName: 1,
+                    uploadID: 1,
+                    thumbnail: 1,
+                    category: 1,
+                    snapshots: 1,
+                    tags: 1,
+                    actor: { $arrayElemAt: ["$actor", 0] },
+                    views: { $arrayElemAt: ["$views", 0] },
+                    likes: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    duration: 1,
+                    likesCount: { $size: { $ifNull: ["$likes", []] } },
+                },
+            },
+            { $sort: { likesCount: -1 } },
+            { $limit: 120 },
+        ]);
+
+        await fs.writeFile('./downloads/most-liked.json', JSON.stringify(videos, null, 2));
+        console.log('Aggregated data saved to most-liked.json');
+    } catch (err) {
+        console.error('Error during aggregation:', err.message);
+    }
+}
+
+// Schedule the aggregation function to run every 30 minutes
+setInterval(aggregateMostLikedVideos, 18000000); // 1800000 milliseconds == 30 minutes
+
+aggregateMostLikedVideos();
